@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Editor settings
+.vscode/
+.idea/
+
+# Logs
+*.log
+*.out
+*.err
+
+# Environment files
+.env
+.env.*
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.7z
+
+# Build and coverage artifacts
+dist/
+build/
+coverage/
+
+# Caches and temp files
+.cache/
+tmp/
+temp/
+*.tmp
