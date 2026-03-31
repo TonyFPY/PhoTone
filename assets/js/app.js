@@ -7,6 +7,7 @@ const config = {
     "Your responses and response times will be recorded anonymously.",
     "Click the Start button if you agree to participate.",
   ],
+  estimatedTime: "10 minutes",
   stageCsvUrls: {
     arousal: "./experiment/arousal.csv",
     valence: "./experiment/valence.csv",
@@ -28,6 +29,11 @@ const config = {
         "There are no right or wrong answers. Please rely on your immediate impression.",
       ],
     },
+  },
+  submitMode: "google-apps-script",
+  googleAppsScript: {
+    payloadField: "payload",
+    useNoCors: true,
   },
   submitUrl: "",
   debug: false,
@@ -121,7 +127,7 @@ function applyConfig() {
     .map((line) => `<p>${line}</p>`)
     .join("");
   ui.sessionIdLabel.textContent = state.sessionId;
-  ui.submissionLabel.textContent = config.submitUrl ? "Configured endpoint" : "No endpoint set";
+  ui.submissionLabel.textContent = config.estimatedTime;
 }
 
 function bindEvents() {
@@ -246,8 +252,6 @@ function handleChoice(side) {
     filter_left: state.currentPresentation.trial.filter_left,
     filter_right: state.currentPresentation.trial.filter_right,
     prompt: state.currentPresentation.trial.prompt,
-    presented_left_filter: state.currentPresentation.left.filter,
-    presented_right_filter: state.currentPresentation.right.filter,
     selected_side: side,
     selected_filter: selectedCandidate.filter,
     trial_start_timestamp: state.trialStartIso,
@@ -319,17 +323,7 @@ async function submitResults() {
   ui.submissionStatusText.textContent = "Submitting";
 
   try {
-    const response = await fetch(config.submitUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Submission failed with HTTP ${response.status}`);
-    }
+    await submitPayload(payload);
 
     state.hasSubmitted = true;
     setSubmissionStatus("success", "Results submitted successfully.");
@@ -351,6 +345,26 @@ async function submitResults() {
   }
 }
 
+async function submitPayload(payload) {
+  if (config.submitMode === "google-apps-script") {
+    return submitToGoogleAppsScript(payload);
+  }
+
+  const response = await fetch(config.submitUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Submission failed with HTTP ${response.status}`);
+  }
+
+  return response;
+}
+
 function buildResultsPayload() {
   return {
     session: {
@@ -366,6 +380,39 @@ function buildResultsPayload() {
     },
     trials: state.responses,
   };
+}
+
+async function submitToGoogleAppsScript(payload) {
+  const gasConfig = {
+    payloadField: "payload",
+    useNoCors: true,
+    ...config.googleAppsScript,
+  };
+  const body = new URLSearchParams({
+    [gasConfig.payloadField]: JSON.stringify(payload),
+  });
+  const requestOptions = {
+    method: "POST",
+    body,
+  };
+
+  if (gasConfig.useNoCors) {
+    requestOptions.mode = "no-cors";
+  }
+
+  const response = await fetch(config.submitUrl, requestOptions);
+
+  // Apps Script web apps are commonly called from static sites with no-cors,
+  // which produces an opaque response even on success.
+  if (gasConfig.useNoCors) {
+    return response;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Submission failed with HTTP ${response.status}`);
+  }
+
+  return response;
 }
 
 function downloadBackup() {

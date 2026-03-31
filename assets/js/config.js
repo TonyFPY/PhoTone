@@ -7,6 +7,7 @@ window.STUDY_CONFIG = {
     "Your responses and response times will be recorded anonymously.",
     "Click the Start button if you agree to participate.",
   ],
+  estimatedTime: "10 minutes",
   stageCsvUrls: {
     arousal: "./experiment/arousal.csv",
     valence: "./experiment/valence.csv",
@@ -29,6 +30,11 @@ window.STUDY_CONFIG = {
       ],
     },
   },
-  submitUrl: "",
+  submitMode: "google-apps-script",
+  googleAppsScript: {
+    payloadField: "payload",
+    useNoCors: true,
+  },
+  submitUrl: "https://script.google.com/macros/s/AKfycbyQordp-KF5zWJVpCO0aGgA86Mm_1JOtqOD9BTJGBFaTPSuZAyxw8jHhroBJ4kqNkmsqA/exec",
   debug: false,
 };
