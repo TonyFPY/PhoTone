@@ -1,0 +1,6 @@
+trial_id,img_id,img_path,filter_left,filter_right,prompt
+1,N035,./images/N035.jpg,filter-clarendon,filter-lark,positive (pleasant)
+2,N002,./images/N002.jpg,filter-hudson,filter-xpro-ii,positive (pleasant)
+3,N088,./images/N088.jpg,filter-lark,filter-inkwell,positive (pleasant)
+4,N017,./images/N017.jpg,filter-gingham,filter-juno,positive (pleasant)
+5,N061,./images/N061.jpg,filter-sutro,filter-xpro-ii,positive (pleasant)

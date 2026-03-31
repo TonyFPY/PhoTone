@@ -18,7 +18,8 @@ window.STUDY_CONFIG = {
       paragraphs: [
         "In this section, choose the image that feels <strong>more positive (pleasant)</strong> in mood. Focus on the overall emotional tone the image conveys.",
         "<strong>For example, an image might feel more positive if it appears more cheerful, inviting, or uplifting, rather than gloomy, tense, or unpleasant.</strong>",
-        "There are no right or wrong answers. Please rely on your immediate impression.",
+        "There are no right or wrong answers.",
+        "Please rely on your immediate impression.",
       ],
     },
     arousal: {
@@ -26,7 +27,8 @@ window.STUDY_CONFIG = {
       paragraphs: [
         "In this section, choose the image that feels <strong>more emotionally intense (activated)</strong>. Focus on how strong or impactful the feeling is.",
         "<strong>For example, an image may feel more intense if it seems more exciting, dramatic, or striking, while a less intense image may feel more calm, muted, or subdued.</strong>",
-        "There are no right or wrong answers. Please rely on your immediate impression.",
+        "There are no right or wrong answers.",
+        "Please rely on your immediate impression.",
       ],
     },
   },

@@ -51,6 +51,7 @@ const state = {
   trialStartEpochMs: 0,
   trialStartIso: "",
   isTransitioning: false,
+  isSubmitting: false,
   hasSubmitted: false,
 };
 
@@ -90,6 +91,8 @@ const ui = {
   submitButton: document.querySelector("#submit-button"),
   retryButton: document.querySelector("#retry-button"),
   exportButton: document.querySelector("#export-button"),
+  uploadModal: document.querySelector("#upload-modal"),
+  uploadMessage: document.querySelector("#upload-message"),
 };
 
 bootstrap().catch((error) => {
@@ -139,6 +142,7 @@ function bindEvents() {
   ui.retryButton.addEventListener("click", submitResults);
   ui.exportButton.addEventListener("click", downloadBackup);
   window.addEventListener("keydown", handleKeyResponse);
+  window.addEventListener("beforeunload", handleBeforeUnload);
 }
 
 function startStudy() {
@@ -286,10 +290,12 @@ function showFinishScreen() {
   ui.submissionStatusText.textContent = config.submitUrl ? "Pending" : "Export only";
 
   if (config.submitUrl) {
-    setSubmissionStatus("idle", "All trials are complete. Submit the results to finish.");
+    setSubmissionStatus("loading", "All trials are complete. Uploading results now...");
     ui.finishMessage.textContent =
-      "All responses are recorded. Submit them to the configured backend endpoint, or download a JSON backup.";
-    ui.submitButton.hidden = false;
+      "All responses are recorded. The results are uploading automatically. Please keep this tab open until submission finishes.";
+    ui.submitButton.hidden = true;
+    showUploadModal("Results are uploading. Please wait...");
+    void submitResults({ auto: true });
   } else {
     setSubmissionStatus(
       "warning",
@@ -306,7 +312,8 @@ function showFinishScreen() {
   debug("Final payload", payload);
 }
 
-async function submitResults() {
+async function submitResults(options = {}) {
+  const { auto = false } = options;
   const payload = buildResultsPayload();
 
   if (!config.submitUrl) {
@@ -317,15 +324,18 @@ async function submitResults() {
     return;
   }
 
+  state.isSubmitting = true;
   ui.submitButton.disabled = true;
   ui.retryButton.disabled = true;
   setSubmissionStatus("loading", "Submitting results to the backend endpoint...");
   ui.submissionStatusText.textContent = "Submitting";
+  showUploadModal("Results are uploading. Please wait...");
 
   try {
     await submitPayload(payload);
 
     state.hasSubmitted = true;
+    hideUploadModal();
     setSubmissionStatus("success", "Results submitted successfully.");
     ui.submissionStatusText.textContent = "Submitted";
     ui.finishMessage.textContent =
@@ -333,15 +343,22 @@ async function submitResults() {
     ui.retryButton.hidden = true;
   } catch (error) {
     console.error(error);
+    hideUploadModal();
     setSubmissionStatus(
       "error",
       `Submission failed: ${error.message}. Retry now or download the JSON backup.`
     );
     ui.submissionStatusText.textContent = "Failed";
+    ui.finishMessage.textContent =
+      "Automatic upload did not finish successfully. Retry the submission or download the JSON backup before leaving this page.";
     ui.retryButton.hidden = false;
     ui.retryButton.disabled = false;
   } finally {
+    state.isSubmitting = false;
     ui.submitButton.disabled = state.hasSubmitted;
+    if (auto && !state.hasSubmitted) {
+      ui.submitButton.hidden = true;
+    }
   }
 }
 
@@ -449,6 +466,17 @@ function setLoadStatus(kind, message) {
 function setSubmissionStatus(kind, message) {
   ui.submissionStatus.dataset.status = kind;
   ui.submissionStatus.textContent = message;
+}
+
+function showUploadModal(message) {
+  ui.uploadMessage.textContent = message;
+  ui.uploadModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function hideUploadModal() {
+  ui.uploadModal.hidden = true;
+  document.body.classList.remove("modal-open");
 }
 
 function showStageInstructions() {
@@ -633,6 +661,15 @@ function debug(...args) {
   if (config.debug) {
     console.debug("[PhoTone]", ...args);
   }
+}
+
+function handleBeforeUnload(event) {
+  if (!state.isSubmitting) {
+    return;
+  }
+
+  event.preventDefault();
+  event.returnValue = "";
 }
 
 function formatStageName(value) {

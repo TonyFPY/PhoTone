@@ -6,14 +6,14 @@ from itertools import combinations
 
 filter_names = [
     "filter-lark",
-    "filter-lofi",
-    "filter-inkwell",  
-    "filter-1977",
     "filter-sutro",
-    "filter-gingham",
     "filter-hudson",
+    "filter-1977",
+    "filter-lofi",
+    "filter-gingham",
     "filter-juno",
-    "filter-xpro-ii",
+    "filter-inkwell",  
+    "filter-moon",
     "filter-clarendon"
 ]
 
@@ -22,7 +22,8 @@ prompt_options = [
     "positive (pleasant)",
     "activated (emotionally intense)"
 ]
-image_dir = "../images/"
+BASE_DIR = os.path.dirname(__file__)
+image_dir = os.path.join(BASE_DIR, "..", "images")
 image_names = glob.glob(os.path.join(image_dir, "*.jpg"))
 
 
@@ -54,25 +55,38 @@ def _choose_orientation(filter_a, filter_b, side_counts):
     return filter_b, filter_a
 
 
+def _build_balanced_image_pool(images, total_trials):
+    if not images:
+        raise ValueError("No images found in image_names.")
+
+    pool = []
+    while len(pool) < total_trials:
+        cycle = list(images)
+        random.shuffle(cycle)
+        pool.extend(cycle)
+
+    return pool[:total_trials]
+
+
 def generate_trials(filters, prompts, images):
     if len(filters) < 2:
         raise ValueError("Need at least two filters to make unique unordered pairs.")
     if not prompts:
         raise ValueError("prompt_options must not be empty.")
-    if not images:
-        raise ValueError("No images found in image_names.")
-
     side_counts = {name: {"left": 0, "right": 0} for name in filters}
     combos = []
 
     for filter_a, filter_b in combinations(filters, 2):
         for prompt in prompts:
-            combos.append((filter_a, filter_b, prompt, random.choice(images)))
+            combos.append((filter_a, filter_b, prompt))
 
     random.shuffle(combos)
+    image_pool = _build_balanced_image_pool(images, len(combos))
 
     trials = []
-    for trial_id, (filter_a, filter_b, prompt, img_path) in enumerate(combos, start=1):
+    for trial_id, ((filter_a, filter_b, prompt), img_path) in enumerate(
+        zip(combos, image_pool), start=1
+    ):
         filter_left, filter_right = _choose_orientation(filter_a, filter_b, side_counts)
         side_counts[filter_left]["left"] += 1
         side_counts[filter_right]["right"] += 1
@@ -104,7 +118,7 @@ def write_trials_csv(trials, output_path):
 
 def main():
     random.seed()
-    output_dir = os.path.dirname(__file__)
+    output_dir = BASE_DIR
     prompt_to_output = {
         "positive (pleasant)": "valence.csv",
         "activated (emotionally intense)": "arousal.csv",
@@ -122,5 +136,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

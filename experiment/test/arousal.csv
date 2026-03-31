@@ -1,0 +1,6 @@
+trial_id,img_id,img_path,filter_left,filter_right,prompt
+1,N097,./images/N097.jpg,filter-clarendon,filter-gingham,activated (emotionally intense)
+2,N093,./images/N093.jpg,filter-lofi,filter-clarendon,activated (emotionally intense)
+3,N022,./images/N022.jpg,filter-gingham,filter-lark,activated (emotionally intense)
+4,N085,./images/N085.jpg,filter-gingham,filter-lofi,activated (emotionally intense)
+5,N088,./images/N088.jpg,filter-lofi,filter-sutro,activated (emotionally intense)
