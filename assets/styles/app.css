@@ -148,6 +148,15 @@ p {
   gap: 6px;
 }
 
+#study-instructions {
+  display: grid;
+  gap: 14px;
+}
+
+#study-instructions p {
+  margin: 0;
+}
+
 .stage-text p {
   margin: 0 0 12px;
 }
@@ -216,8 +225,13 @@ p {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: auto;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 0;
+}
+
+#intro-screen .status-row,
+#intro-screen .intro-actions {
+  margin-top: 16px;
 }
 
 .primary-button,
