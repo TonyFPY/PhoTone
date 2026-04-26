@@ -1,0 +1,3 @@
+stage,mean_pair_agreement,split_half_spearman,pair_count
+valence,0.775000,0.884323,45
+arousal,0.672222,0.636476,45
